@@ -1,4 +1,4 @@
-# SQL-Server-Log-Alert-System
+# SQL Server Log Alert System
 Log and Alert system for SQL Server
 
 There are nine stored procedure, two tables and five jobs.
