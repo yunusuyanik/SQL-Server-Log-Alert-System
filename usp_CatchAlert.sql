@@ -52,8 +52,8 @@ DECLARE @value int
 				1 priority,
 				volume_letter+' ('+volume_label+') <br> 
 				<b>Capacity (GB): </b>'+CONVERT(VARCHAR(100),volume_capacity_gb)+'
-				<b>Free Space (GB) : </b>'+CONVERT(VARCHAR(100),volume_free_space_gb)+'
-				<b>Free Space (Percentage) : </b>'+CONVERT(VARCHAR(100),percentage_free_space) error_message
+				<br><b>Free Space (GB) : </b>'+CONVERT(VARCHAR(100),volume_free_space_gb)+'
+				<br><b>Free Space (Percentage) : </b>'+CONVERT(VARCHAR(100),percentage_free_space) error_message
 			FROM Log_DriveStats 
 			WHERE 
 				percentage_free_space<@value
