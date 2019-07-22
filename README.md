@@ -9,19 +9,19 @@ There are nine stored procedure, two tables and five jobs.
 
 It check these things, for now;
 
-1 - Job Failed
+* Job Failed
 
-2 - Disk Free Size
+* Disk Free Size
 
-3 - CPU
+* CPU
 
-4 - TempDB Size
+* TempDB Size
 
-5 - Log File Size
+* Log File Size
 
-6 - AlwaysOn Latency
+* AlwaysOn Latency
 
-7 - is_percent_growth=0
+* is_percent_growth=0
 
 
 ### usp_DriveStats
