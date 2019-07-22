@@ -32,7 +32,7 @@ SET ANSI_PADDING OFF
 GO
 
 
-
+TRUNCATE TABLE ConfigThreshold
 DECLARE @customername varchar(100)=''
 DECLARE @profilename varchar(100)=''
 SET IDENTITY_INSERT ConfigThreshold ON
