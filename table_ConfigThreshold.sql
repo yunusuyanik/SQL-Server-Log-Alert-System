@@ -48,6 +48,6 @@ VALUES
 (6,@customername,'AlwaysOn Latency',1,'Dakika deger alan AlwaysOn Latency.',@mail,'','',@profilename,30,getdate()-1,getdate()-1),
 (7,@customername,'Weekly Report',1,'Haftalik performans stats ve wait statistics raporlari.',@mail,'','',@profilename,0,getdate()-1,getdate()-1),
 (8,@customername,'Log File Size',1,'Log File büyüklügü Data File''in %75 veya üzeri ise.',@mail,'','',@profilename,75,getdate()-1,getdate()-1)
-
+(9,@customername,'SQL Error Log',1,'SQL Error Log üzerindeki severity 16 üzerindeki hatalar.',@mail,'','',@profilename,0,getdate()-1,getdate()-1)
 SET IDENTITY_INSERT ConfigThreshold OFF
 
