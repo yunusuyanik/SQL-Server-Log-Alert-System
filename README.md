@@ -23,6 +23,8 @@ It check these things, for now;
 
 * is_percent_growth=0
 
+* Severity>=16 errors.
+
 
 ### usp_DriveStats
  
