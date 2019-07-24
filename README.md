@@ -1,7 +1,7 @@
 # SQL Server Log Alert System
 Log and Alert system for SQL Server
 
-There are nine stored procedure, two tables and five jobs.
+There are ten stored procedure, two tables and five jobs.
 
 ### usp_CatchAlert
 
@@ -47,6 +47,9 @@ It check these things, for now;
 <p>This stored procedure</p>
 
 ### usp_Report
+<p>This stored procedure</p>
+
+### usp_ErrorLog
 <p>This stored procedure</p>
 
 ### usp_WhoIsActive_Log
