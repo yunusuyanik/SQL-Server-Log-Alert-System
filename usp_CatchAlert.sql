@@ -39,6 +39,25 @@ DECLARE @value int
 
 
 	/* ----------------------------------
+	 I am gonna check sql error log. */
+	PRINT 'I am gonna check fail jobs'
+
+		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WHERE alert_group='SQL Error Log'
+
+			INSERT INTO ErrorLog (check_date,server_name,alert_group,alert_name,error_message)
+
+			SELECT 
+				check_date,@@SERVERNAME server_name,
+				'SQL Error Log' alert_group,
+				process_info alert_name,
+				'<br> <b>Error Message :</b> <br>'+error_message error_message from Log_SQLErrors
+			WHERE 
+				check_date>=@last_check_date
+
+		UPDATE ConfigThreshold SET last_check_date=GETDATE() WHERE alert_group='SQL Error Log' 
+
+
+	/* ----------------------------------
 	 I am gonna check disk size. */
 	PRINT 'I am gonna check disk size.'
 
@@ -252,8 +271,8 @@ DECLARE @value int
 		SELECT TOP 1 @MailSubject=QUOTENAME(customer_name)+' - '+QUOTENAME(server_name)+' - '+c.alert_group,
 		@body='
 		<b>Log Date : </b>'+CONVERT(VARCHAR(21),check_date,120)+'
-		<br><b>'+alert_name+'</b>
-		<br><b>Detail : </b>'+error_message+'
+		<br><b>Name </b>'+alert_name+'
+		<br><I>Detail : </I>'+error_message+'
 		',@To=c.[To],@ProfileName=c.profilename,@IsActive=c.is_active,
 		@id=e.ID,
 		@alert_group=e.alert_group
