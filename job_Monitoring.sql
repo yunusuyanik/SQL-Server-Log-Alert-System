@@ -143,6 +143,12 @@ EXEC [usp_Jobs]
 @OutputTableName=''[Log_JobInfo]'',
 @CleanupTime=''30''
 
+EXEC [usp_ErrorLog
+@OutputDatabaseName=''[DBA_DB]'',
+@OutputSchemaName=''[dbo]'',
+@OutputTableName=''[Log_SQLErrors]'',
+@CleanupTime=''30''
+
 ', 
 		@database_name=N'DBA_DB', 
 		@flags=0
@@ -304,6 +310,12 @@ EXEC [usp_Jobs]
 @OutputDatabaseName=''[DBA_DB]'',
 @OutputSchemaName=''[dbo]'',
 @OutputTableName=''[Log_JobInfo]'',
+@CleanupTime=''30''
+
+EXEC [usp_ErrorLog
+@OutputDatabaseName=''[DBA_DB]'',
+@OutputSchemaName=''[dbo]'',
+@OutputTableName=''[Log_SQLErrors]'',
 @CleanupTime=''30''
 
 EXEC usp_WhoIsActive_Log', 
