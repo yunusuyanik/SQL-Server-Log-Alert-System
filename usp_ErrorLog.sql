@@ -70,8 +70,6 @@ ALTER PROCEDURE [dbo].[usp_ErrorLog]
 		PRINT 'I will drop temp tables.'
 
 		IF OBJECT_ID('tempdb.dbo.#temp_error_log') IS NOT NULL DROP TABLE #temp_error_log
-		IF OBJECT_ID('tempdb.dbo.#temp_error_log') IS NOT NULL DROP TABLE #temp_error_log
-		IF OBJECT_ID('tempdb.dbo.#temp_error_log') IS NOT NULL DROP TABLE #temp_error_log
 
 		CREATE TABLE #temp_error_log (LogDate DATETIME, ProcessInfo VARCHAR(64), [Text] VARCHAR(MAX));
 		
