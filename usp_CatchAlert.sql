@@ -52,7 +52,7 @@ DECLARE @value int
 				process_info alert_name,
 				'<br> <b>Error Message :</b> <br>'+error_message error_message from Log_SQLErrors
 			WHERE 
-				check_date>=@last_check_date
+				log_date>=@last_check_date
 
 		UPDATE ConfigThreshold SET last_check_date=GETDATE() WHERE alert_group='SQL Error Log' 
 
