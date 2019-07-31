@@ -150,6 +150,8 @@ EXEC [usp_ErrorLog]
 @OutputTableName=''[Log_SQLErrors]'',
 @CleanupTime=30
 
+EXEC sp_cycle_errorlog
+
 ', 
 		@database_name=N'DBA_DB', 
 		@flags=0
