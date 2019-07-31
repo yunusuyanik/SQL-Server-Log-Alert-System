@@ -26,7 +26,7 @@ DECLARE @value int
 			INSERT INTO ErrorLog (check_date,server_name,alert_group,alert_name,error_message)
 
 			SELECT 
-				check_date,@@SERVERNAME server_name,
+				start_time,@@SERVERNAME server_name,
 				'Job Failed' alert_group,
 				job_name alert_name,
 				'<br> <b>StepName :</b> '+step_name+'<br> <b>Error Message :</b> <br>'+error_message error_message from Log_JobInfo 
@@ -47,7 +47,7 @@ DECLARE @value int
 			INSERT INTO ErrorLog (check_date,server_name,alert_group,alert_name,error_message)
 
 			SELECT 
-				check_date,@@SERVERNAME server_name,
+				log_date,@@SERVERNAME server_name,
 				'SQL Error Log' alert_group,
 				process_info alert_name,
 				'<br> <b>Error Message :</b> <br>'+error_message error_message from Log_SQLErrors
