@@ -1,4 +1,4 @@
-﻿USE [DBA_DB]
+USE [DBA_DB]
 GO
 /****** Object:  StoredProcedure [dbo].[usp_CatchAlert]    Script Date: 7/19/2019 3:33:05 PM ******/
 SET ANSI_NULLS ON
@@ -29,15 +29,15 @@ DECLARE @value int
 					@@SERVERNAME server_name,
 					'Job Failed' alert_group,
 					job_name alert_name,
-					'<br><b>StepName :</b> '+ISNULL(step_name,'')+'
-					<br><b>Status :</b> '+ISNULL(status,'')+'
-					<br><b>Error Message :</b> 
-					<br>'+ISNULL(last_run_message,'')+
+					'<br><b>StepName :</b> '+ISNULL(step_name,'')+
+					'<br><b>Status :</b> '+ISNULL(status,'')+
 					'<br><b>Job Owner : </b>'+ISNULL(job_owner,'')+
 					'<br><b>Frequency : </b>'+ISNULL(frequency,'')+
 					'<br><b>Subday Frequency : </b>'+ISNULL(subday_frequency,'')+
 					'<br><b>Next Start Date : </b>'+CAST(next_start_date AS VARCHAR(100))+
-					'<br><b>Last Run Duration </b>: '+CAST(last_run_duration AS VARCHAR(100)) error_message
+					'<br><b>Last Run Duration </b>: '+CAST(last_run_duration AS VARCHAR(100))+
+					'<br><b>Error Message :</b>
+					<br>'+ISNULL(last_run_message,'') error_message
 				FROM Log_JobHistory 
 				WHERE 
 					check_date>=@last_check_date
@@ -297,7 +297,6 @@ DECLARE @value int
 					UPDATE ErrorLog SET email_send=1 WHERE ID=@id
 					UPDATE ConfigThreshold SET last_mail_send=GETDATE() WHERE alert_group=@alert_group
 			END
-
 
 
 
