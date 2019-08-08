@@ -1,11 +1,11 @@
 USE [msdb]
 GO
 
-/****** Object:  Job [DBA - Monitoring - Alert - Per Minute]    Script Date: 7/26/2019 1:51:33 PM ******/
+/****** Object:  Job [DBA - Monitoring - Alert - Per Minute]    Script Date: 8/8/2019 11:14:35 AM ******/
 BEGIN TRANSACTION
 DECLARE @ReturnCode INT
 SELECT @ReturnCode = 0
-/****** Object:  JobCategory [[Uncategorized (Local)]]    Script Date: 7/26/2019 1:51:33 PM ******/
+/****** Object:  JobCategory [[Uncategorized (Local)]]    Script Date: 8/8/2019 11:14:35 AM ******/
 IF NOT EXISTS (SELECT name FROM msdb.dbo.syscategories WHERE name=N'[Uncategorized (Local)]' AND category_class=1)
 BEGIN
 EXEC @ReturnCode = msdb.dbo.sp_add_category @class=N'JOB', @type=N'LOCAL', @name=N'[Uncategorized (Local)]'
@@ -23,9 +23,9 @@ EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'DBA - Monitoring - Alert - P
 		@delete_level=0, 
 		@description=N'No description available.', 
 		@category_name=N'[Uncategorized (Local)]', 
-		@owner_login_name=N'sa', @job_id = @jobId OUTPUT
+		@owner_login_name=N'CSTECH\danisman', @job_id = @jobId OUTPUT
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
-/****** Object:  Step [DBA - Monitoring - Alert - Per Minute]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  Step [DBA - Monitoring - Alert - Per Minute]    Script Date: 8/8/2019 11:14:35 AM ******/
 EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'DBA - Monitoring - Alert - Per Minute', 
 		@step_id=1, 
 		@cmdexec_success_code=0, 
@@ -67,11 +67,11 @@ QuitWithRollback:
 EndSave:
 GO
 
-/****** Object:  Job [DBA - Monitoring - Daily - Cleanup]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  Job [DBA - Monitoring - Daily - Cleanup]    Script Date: 8/8/2019 11:14:35 AM ******/
 BEGIN TRANSACTION
 DECLARE @ReturnCode INT
 SELECT @ReturnCode = 0
-/****** Object:  JobCategory [[Uncategorized (Local)]]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  JobCategory [[Uncategorized (Local)]]    Script Date: 8/8/2019 11:14:35 AM ******/
 IF NOT EXISTS (SELECT name FROM msdb.dbo.syscategories WHERE name=N'[Uncategorized (Local)]' AND category_class=1)
 BEGIN
 EXEC @ReturnCode = msdb.dbo.sp_add_category @class=N'JOB', @type=N'LOCAL', @name=N'[Uncategorized (Local)]'
@@ -91,7 +91,7 @@ EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'DBA - Monitoring - Daily - C
 		@category_name=N'[Uncategorized (Local)]', 
 		@owner_login_name=N'sa', @job_id = @jobId OUTPUT
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
-/****** Object:  Step [DBA - Monitoring - Daily - Cleanup]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  Step [DBA - Monitoring - Daily - Cleanup]    Script Date: 8/8/2019 11:14:35 AM ******/
 EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'DBA - Monitoring - Daily - Cleanup', 
 		@step_id=1, 
 		@cmdexec_success_code=0, 
@@ -102,57 +102,14 @@ EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'DBA - Mo
 		@retry_attempts=0, 
 		@retry_interval=0, 
 		@os_run_priority=0, @subsystem=N'TSQL', 
-		@command=N'
-EXEC [usp_FileStats]
-@OutputDatabaseName=''[DBA_DB]'',
-@OutputSchemaName=''[dbo]'',
-@OutputTableName=''[Log_FileStats]'',
-@CleanupTime=30
-
-
-EXEC [usp_DriveStats]
-@OutputDatabaseName=''[DBA_DB]'',
-@OutputSchemaName=''[dbo]'',
-@OutputTableName=''[Log_DriveStats]'',
-@CleanupTime=30
-
-
-EXEC [usp_TableStats]
-@OutputDatabaseName=''[DBA_DB]'',
-@OutputSchemaName=''[dbo]'',
-@OutputTableName=''[Log_TableStats]'',
-@CleanupTime=30
-
-
-EXEC [usp_WaitStats]
-@OutputDatabaseName=''[DBA_DB]'',
-@OutputSchemaName=''[dbo]'',
-@OutputTableName=''[Log_WaitStats]'',
-@CleanupTime=30
-
-
-EXEC [usp_PerfmonStats]
-@OutputDatabaseName=''[DBA_DB]'',
-@OutputSchemaName=''[dbo]'',
-@OutputTableName=''[Log_PerfmonStats]'',
-@CleanupTime=30
-
-EXEC [usp_Jobs]
-@OutputDatabaseName=''[DBA_DB]'',
-@OutputSchemaName=''[dbo]'',
-@OutputTableName=''[Log_JobInfo]'',
-@CleanupTime=30
-
-
-EXEC [usp_ErrorLog]
-@OutputDatabaseName=''[DBA_DB]'',
-@OutputSchemaName=''[dbo]'',
-@OutputTableName=''[Log_SQLErrors]'',
-@CleanupTime=30
-
-EXEC sp_cycle_errorlog
-
-', 
+		@command=N'DELETE FROM [DBA_DB].[dbo].[Log_DriveStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
+DELETE FROM [DBA_DB].[dbo].[Log_FileStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
+DELETE FROM [DBA_DB].[dbo].[Log_SQLErrors] WHERE check_date < DATEADD(dd,-30,GETDATE())
+DELETE FROM [DBA_DB].[dbo].[Log_JobHistory] WHERE check_date < DATEADD(dd,-30,GETDATE())
+DELETE FROM [DBA_DB].[dbo].[Log_PerfmonStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
+DELETE FROM [DBA_DB].[dbo].[Log_TableStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
+DELETE FROM [DBA_DB].[dbo].[Log_WaitStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
+DELETE FROM [DBA_DB].[dbo].[Log_WhoIsActive] WHERE collection_time < DATEADD(dd,-30,GETDATE())', 
 		@database_name=N'DBA_DB', 
 		@flags=0
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
@@ -181,11 +138,11 @@ QuitWithRollback:
 EndSave:
 GO
 
-/****** Object:  Job [DBA - Monitoring - Hourly]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  Job [DBA - Monitoring - Hourly]    Script Date: 8/8/2019 11:14:35 AM ******/
 BEGIN TRANSACTION
 DECLARE @ReturnCode INT
 SELECT @ReturnCode = 0
-/****** Object:  JobCategory [[Uncategorized (Local)]]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  JobCategory [[Uncategorized (Local)]]    Script Date: 8/8/2019 11:14:35 AM ******/
 IF NOT EXISTS (SELECT name FROM msdb.dbo.syscategories WHERE name=N'[Uncategorized (Local)]' AND category_class=1)
 BEGIN
 EXEC @ReturnCode = msdb.dbo.sp_add_category @class=N'JOB', @type=N'LOCAL', @name=N'[Uncategorized (Local)]'
@@ -203,9 +160,9 @@ EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'DBA - Monitoring - Hourly',
 		@delete_level=0, 
 		@description=N'No description available.', 
 		@category_name=N'[Uncategorized (Local)]', 
-		@owner_login_name=N'sa', @job_id = @jobId OUTPUT
+		@owner_login_name=N'CS\csdbuser', @job_id = @jobId OUTPUT
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
-/****** Object:  Step [DBA - Monitoring - Hourly]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  Step [DBA - Monitoring - Hourly]    Script Date: 8/8/2019 11:14:35 AM ******/
 EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'DBA - Monitoring - Hourly', 
 		@step_id=1, 
 		@cmdexec_success_code=0, 
@@ -268,11 +225,11 @@ QuitWithRollback:
 EndSave:
 GO
 
-/****** Object:  Job [DBA - Monitoring - Per Minute]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  Job [DBA - Monitoring - Per Minute]    Script Date: 8/8/2019 11:14:36 AM ******/
 BEGIN TRANSACTION
 DECLARE @ReturnCode INT
 SELECT @ReturnCode = 0
-/****** Object:  JobCategory [[Uncategorized (Local)]]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  JobCategory [[Uncategorized (Local)]]    Script Date: 8/8/2019 11:14:36 AM ******/
 IF NOT EXISTS (SELECT name FROM msdb.dbo.syscategories WHERE name=N'[Uncategorized (Local)]' AND category_class=1)
 BEGIN
 EXEC @ReturnCode = msdb.dbo.sp_add_category @class=N'JOB', @type=N'LOCAL', @name=N'[Uncategorized (Local)]'
@@ -290,9 +247,9 @@ EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'DBA - Monitoring - Per Minut
 		@delete_level=0, 
 		@description=N'No description available.', 
 		@category_name=N'[Uncategorized (Local)]', 
-		@owner_login_name=N'sa', @job_id = @jobId OUTPUT
+		@owner_login_name=N'CS\csdbuser', @job_id = @jobId OUTPUT
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
-/****** Object:  Step [DBA - Monitoring - Per Minute]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  Step [DBA - Monitoring - Per Minute]    Script Date: 8/8/2019 11:14:36 AM ******/
 EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'DBA - Monitoring - Per Minute', 
 		@step_id=1, 
 		@cmdexec_success_code=0, 
@@ -307,16 +264,6 @@ EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'DBA - Mo
 @OutputDatabaseName=''[DBA_DB]'',
 @OutputSchemaName=''[dbo]'',
 @OutputTableName=''[Log_PerfmonStats]''
-
-EXEC [usp_Jobs]
-@OutputDatabaseName=''[DBA_DB]'',
-@OutputSchemaName=''[dbo]'',
-@OutputTableName=''[Log_JobInfo]''
-
-EXEC [usp_ErrorLog]
-@OutputDatabaseName=''[DBA_DB]'',
-@OutputSchemaName=''[dbo]'',
-@OutputTableName=''[Log_SQLErrors]''
 
 EXEC usp_WhoIsActive_Log', 
 		@database_name=N'DBA_DB', 
@@ -347,11 +294,11 @@ QuitWithRollback:
 EndSave:
 GO
 
-/****** Object:  Job [DBA - Monitoring - Weekly - Report]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  Job [DBA - Monitoring - Weekly - Report]    Script Date: 8/8/2019 11:14:36 AM ******/
 BEGIN TRANSACTION
 DECLARE @ReturnCode INT
 SELECT @ReturnCode = 0
-/****** Object:  JobCategory [[Uncategorized (Local)]]    Script Date: 7/26/2019 1:51:34 PM ******/
+/****** Object:  JobCategory [[Uncategorized (Local)]]    Script Date: 8/8/2019 11:14:36 AM ******/
 IF NOT EXISTS (SELECT name FROM msdb.dbo.syscategories WHERE name=N'[Uncategorized (Local)]' AND category_class=1)
 BEGIN
 EXEC @ReturnCode = msdb.dbo.sp_add_category @class=N'JOB', @type=N'LOCAL', @name=N'[Uncategorized (Local)]'
@@ -371,7 +318,7 @@ EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'DBA - Monitoring - Weekly - 
 		@category_name=N'[Uncategorized (Local)]', 
 		@owner_login_name=N'sa', @job_id = @jobId OUTPUT
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
-/****** Object:  Step [DBA - Monitoring - Weekly - Report]    Script Date: 7/26/2019 1:51:35 PM ******/
+/****** Object:  Step [DBA - Monitoring - Weekly - Report]    Script Date: 8/8/2019 11:14:36 AM ******/
 EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'DBA - Monitoring - Weekly - Report', 
 		@step_id=1, 
 		@cmdexec_success_code=0, 
