@@ -11,187 +11,78 @@ IF OBJECT_ID('dbo.usp_Jobs') IS NULL
 GO
 
 ALTER PROCEDURE [dbo].[usp_Jobs]
-			@OutputDatabaseName NVARCHAR(256) = NULL ,
-			@OutputSchemaName NVARCHAR(256) = NULL ,
-			@OutputTableName NVARCHAR(256) = NULL,
-			@CleanupTime VARCHAR(3) = NULL,
-			@LastTime INT = 1
 		AS
-		
-	/*  If table not exists it created. */
-	PRINT 'If table not exists it created.'
-
-	DECLARE @StringToExecute VARCHAR(MAX)
-	SET @StringToExecute = 'USE '
-        + @OutputDatabaseName
-        + '; IF EXISTS(SELECT * FROM '
-        + @OutputDatabaseName
-        + '.INFORMATION_SCHEMA.SCHEMATA WHERE QUOTENAME(SCHEMA_NAME) = '''
-        + @OutputSchemaName
-        + ''') AND NOT EXISTS (SELECT * FROM '
-        + @OutputDatabaseName
-        + '.INFORMATION_SCHEMA.TABLES WHERE QUOTENAME(TABLE_SCHEMA) = '''
-        + @OutputSchemaName + ''' AND QUOTENAME(TABLE_NAME) = '''
-        + @OutputTableName + ''') CREATE TABLE '
-        + @OutputSchemaName + '.'
-        + @OutputTableName
-        + ' ([ID] [int] IDENTITY(1,1) NOT NULL,
-			[check_date] [datetime] NULL,
-			[sequence] int  NULL,
-			[job_name] [varchar](3000) NULL,
-			[step_name] [varchar](3000) NULL,
-			[status] [varchar](100) NULL,
-			[error_message] [varchar](max) NULL,
-			[start_time] datetime NULL,
-			[end_time] datetime NULL,
-			[execution_time] [varchar](3000) NULL,
-            PRIMARY KEY CLUSTERED (ID ASC))
-
-			IF NOT EXISTS(SELECT * FROM sys.indexes WHERE object_id = object_id('''+@OutputTableName+''') AND NAME =''IX_SA_DBA_check_date'') 
-		CREATE INDEX IX_SA_DBA_check_date ON '+@OutputTableName+' ([check_date]) WITH (FILLFACTOR=90);';
-	
-
-	EXEC(@StringToExecute);
-
-	IF @CleanupTime IS NOT NULL
-		BEGIN
-			SET @StringToExecute = '
-			DELETE FROM '+@OutputDatabaseName+'.'+@OutputSchemaName+'.'+@OutputTableName+' 
-			WHERE check_date<GETDATE()-'+@CleanupTime+'';
-			EXEC(@StringToExecute);
-			
-			/*  If @CleanupTime is not null. So, i clear it. */
-			PRINT 'If @CleanupTime is not null. So, i clear it.'
-
-		END
-
-
-	DECLARE @checkdate datetime = GETDATE()
-	DECLARE @MaxDate DATETIME
-	IF @OutputDatabaseName IS NOT NULL AND @OutputSchemaName IS NOT NULL AND @OutputTableName IS NOT NULL
-	BEGIN 
-		SELECT @MaxDate=ISNULL((MAX(start_time)),GETDATE()-30) FROM Log_JobInfo
-	END 
-	ELSE BEGIN SET @MaxDate=GETDATE()-@LastTime END
-
-	/*  I will import data on temp table. */
-	PRINT 'I will import data on temp table.'
 
 	IF OBJECT_ID('tempdb.dbo.#temp_job') IS NOT NULL
 		DROP TABLE #temp_job
-
-	CREATE TABLE #temp_job ([check_date] [datetime] NULL,
-		[sequence] int  NULL,
-		[job_name] [varchar](3000) NULL,
-		[step_name] [varchar](3000) NULL,
-		[status] [varchar](100) NULL,
-		[error_message] [varchar](max) NULL,
-		[start_time] datetime NULL,
-		[end_time] datetime NULL,
-		[execution_time] [varchar](3000) NULL)
 		
-		INSERT INTO #temp_job ([sequence],[check_date],[job_name],[step_name],[execution_time],[start_time],[status],[error_message])
-			
-			/*  I take fail jobs at this part. */
-			SELECT
-			[sequence] = 1
-			,[check_date] = @checkdate
-			,[job_name] = j.name
-			,[step_name] = jh.step_name
-			,[execution_time] = DATEADD(HOUR, (run_duration / 10000) % 100,
-			DATEADD(MINUTE, (run_duration / 100) % 100,
-			DATEADD(SECOND, (run_duration / 1) % 100, CAST('00:00:00' AS TIME(2)))))
-			,msdb.dbo.agent_datetime(run_date, run_time) as [start_time]
-			,[status] = CASE
-			WHEN jh.run_status = 0 THEN 'Failed'
-			WHEN jh.run_status = 1 THEN 'Succeded'
-			WHEN jh.run_status = 2 THEN 'Retry'
-			WHEN jh.run_status = 3 THEN 'Canceled'
-			END
-			,[error_message] = jh.message
-			FROM msdb.dbo.sysjobhistory jh
-			JOIN msdb.dbo.sysjobs j
-			ON j.job_id = jh.job_id
-				WHERE j.enabled = 1
-				AND jh.run_status != 1
-				AND jh.step_id!=0
-				AND  msdb.dbo.agent_datetime(run_date, run_time)>= @MaxDate
+			SELECT 
+				[check_date] = GETDATE(),
+				[job_name] = j.Name, 
+				[description] = '"' + NULLIF(j.Description, 'No description available.') + '"',
+				[job_owner] = SUSER_SNAME(j.owner_sid),
+				[number_of_steps] = (SELECT COUNT(step_id) FROM msdb.dbo.sysjobsteps WHERE job_id = j.job_id),
+				[is_enabled] = CASE j.Enabled
+					WHEN 1 THEN 'Yes'
+					WHEN 0 THEN 'No'
+				END,
+				[frequency] = CASE s.freq_type
+					WHEN 1 THEN 'Once'
+					WHEN 4 THEN 'Daily'
+					WHEN 8 THEN 'Weekly'
+					WHEN 16 THEN 'Monthly'
+					WHEN 32 THEN 'Monthly relative'
+					WHEN 64 THEN 'When SQLServer Agent starts'
+				END, 
+				CASE(s.freq_subday_interval)
+					WHEN 0 THEN 'Once'
+					ELSE cast('Every ' 
+							+ right(s.freq_subday_interval,2) 
+							+ ' '
+							+     CASE(s.freq_subday_type)
+										WHEN 1 THEN 'Once'
+										WHEN 4 THEN 'Minutes'
+										WHEN 8 THEN 'Hours'
+									END as char(16))
+				END as [subday_frequency],
+				[next_start date] = CONVERT(DATETIME, RTRIM(NULLIF(js.next_run_date, 0)) + ' '
+					+ STUFF(STUFF(REPLACE(STR(RTRIM(js.next_run_time),6,0),
+					' ','0'),3,0,':'),6,0,':')),
+				[last_run duration] = STUFF(STUFF(REPLACE(STR(lastrun.run_duration,7,0),
+					' ','0'),4,0,':'),7,0,':'),
+				[last_start date] = CONVERT(DATETIME, RTRIM(lastrun.run_date) + ' '
+					+ STUFF(STUFF(REPLACE(STR(RTRIM(lastrun.run_time),6,0),
+					' ','0'),3,0,':'),6,0,':')),
+				[last_run message] = lastrun.message
+				,[status] = CASE
+				WHEN lastrun.run_status = 0 THEN 'Failed'
+				WHEN lastrun.run_status = 1 THEN 'Succeded'
+				WHEN lastrun.run_status = 2 THEN 'Retry'
+				WHEN lastrun.run_status = 3 THEN 'Canceled'
+				END
+			INTO #temp_job
+			FROM msdb.dbo.sysjobs j
+			LEFT OUTER JOIN msdb.dbo.sysjobschedules js
+				ON j.job_id = js.job_id
+			LEFT OUTER JOIN msdb.dbo.sysschedules s
+				ON js.schedule_id = s.schedule_id 
+			LEFT  JOIN (SELECT job_id, max(run_duration) AS run_duration
+					FROM msdb.dbo.sysjobhistory
+					GROUP BY job_id) maxdur
+			ON j.job_id = maxdur.job_id
+			-- INNER JOIN -- Swap Join Types if you don't want to include jobs that have never run
+			LEFT JOIN
+				(SELECT j1.job_id, j1.run_duration, j1.run_date, j1.run_time, j1.message,j1.run_status
+				FROM msdb.dbo.sysjobhistory j1
+				WHERE instance_id = (SELECT MAX(instance_id) FROM msdb.dbo.sysjobhistory j2 WHERE j2.job_id = j1.job_id)) lastrun
+				ON j.job_id = lastrun.job_id
 
-			UNION
-			/*  I take jobs that longer then other at this part. */
-			SELECT
-			[sequence] = 2
-			,[check_date] = @checkdate
-			,[job_name] = j.name
-			,[step_name] = jh.step_name
-			,[execution_time] = DATEADD(HOUR, (run_duration / 10000) % 100,
-			DATEADD(MINUTE, (run_duration / 100) % 100,
-			DATEADD(SECOND, (run_duration / 1) % 100, CAST('00:00:00' AS TIME(2)))))
-			,msdb.dbo.agent_datetime(run_date, run_time) as [start_time]
-			,[status] = CASE
-			WHEN jh.run_status = 0 THEN 'Failed'
-			WHEN jh.run_status = 1 THEN 'Succeded'
-			WHEN jh.run_status = 2 THEN 'Retry'
-			WHEN jh.run_status = 3 THEN 'Canceled'
-			END
-			,[error_message] = NULL
-			FROM msdb.dbo.sysjobhistory jh
-			JOIN msdb.dbo.sysjobs j
-			ON j.job_id = jh.job_id
-				WHERE j.enabled = 1
-				AND jh.step_id = 0
-				AND jh.run_status = 1
-				AND jh.run_duration > 300
-				AND  msdb.dbo.agent_datetime(run_date, run_time)>= @MaxDate
 
-			UNION
-			/*  I take other jobs that does not fail and not longer */
-			SELECT
-			[sequence] = 3
-			,[check_date] = @checkdate
-			,[job_name] = j.name
-			,[step_name] = jh.step_name
-			,[execution_time] = DATEADD(HOUR, (run_duration / 10000) % 100,
-			DATEADD(MINUTE, (run_duration / 100) % 100,
-			DATEADD(SECOND, (run_duration / 1) % 100, CAST('00:00:00' AS TIME(2)))))
-			,msdb.dbo.agent_datetime(run_date, run_time) as [start_time]
-			,[status] = CASE
-			WHEN jh.run_status = 0 THEN 'Failed'
-			WHEN jh.run_status = 1 THEN 'Succeded'
-			WHEN jh.run_status = 2 THEN 'Retry'
-			WHEN jh.run_status = 3 THEN 'Canceled'
-			END
-			,[error_message] = NULL
-			FROM msdb.dbo.sysjobhistory jh
-			JOIN msdb.dbo.sysjobs j
-			ON j.job_id = jh.job_id
-				WHERE j.enabled = 1
-				AND jh.step_id = 0
-				AND jh.run_status = 1
-				AND jh.run_duration < 301
-				--AND j.name NOT IN ('jobname')  
-				--Listede gözükmesini istemediğin jobları buraya yazabilirsin
-				AND  msdb.dbo.agent_datetime(run_date, run_time)>= @MaxDate
 
-	IF @OutputDatabaseName IS NOT NULL AND @OutputSchemaName IS NOT NULL AND @OutputTableName IS NOT NULL
-	BEGIN
-		SET @StringToExecute = '
-		INSERT INTO '+@OutputDatabaseName+'.'+@OutputSchemaName+'.'+@OutputTableName+' ([sequence],[check_date],[job_name],[step_name],[execution_time],[start_time],[status],[error_message])
-		SELECT [sequence],[check_date],[job_name],[step_name],[execution_time],[start_time],[status],[error_message]
-		FROM #temp_job';
-		EXEC(@StringToExecute)
-
-		/*  If you want move data to table, I will import on the live table. */
-		PRINT 'If you want move data to table, I will import on the live table.'
-
-	END
-
-	IF @OutputDatabaseName IS NULL AND @OutputSchemaName IS NULL AND @OutputTableName IS NULL
-	BEGIN
 		SELECT * FROM #temp_job
 
 		/*  If you want just see, I can show your data on the your results screen. */
 		PRINT 'If you want just see, I can show your data on the your results screen.'
 
-	END
+GO
 
