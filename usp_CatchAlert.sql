@@ -24,16 +24,25 @@ DECLARE @value int
 		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WHERE alert_group='Job Failed'
 
 			INSERT INTO ErrorLog (check_date,server_name,alert_group,alert_name,error_message)
-
-			SELECT 
-				start_time,@@SERVERNAME server_name,
-				'Job Failed' alert_group,
-				job_name alert_name,
-				'<br> <b>StepName :</b> '+step_name+'<br> <b>Error Message :</b> <br>'+error_message error_message from Log_JobInfo 
-			WHERE 
-				check_date>=@last_check_date
-				AND Status='Failed'
-				AND job_name NOT IN ('YONTEMCREDITCUBE Process','YONTEMCUBE Process')
+				SELECT 
+					last_start_date check_date,
+					@@SERVERNAME server_name,
+					'Job Failed' alert_group,
+					job_name alert_name,
+					'<br><b>StepName :</b> '+ISNULL(step_name,'')+'
+					<br><b>Status :</b> '+ISNULL(status,'')+'
+					<br><b>Error Message :</b> 
+					<br>'+ISNULL(last_run_message,'')+
+					'<br><b>Job Owner : </b>'+ISNULL(job_owner,'')+
+					'<br><b>Frequency : </b>'+ISNULL(frequency,'')+
+					'<br><b>Subday Frequency : </b>'+ISNULL(subday_frequency,'')+
+					'<br><b>Next Start Date : </b>'+CAST(next_start_date AS VARCHAR(100))+
+					'<br><b>Last Run Duration </b>: '+CAST(last_run_duration AS VARCHAR(100)) error_message
+				FROM Log_JobHistory 
+				WHERE 
+					check_date>=@last_check_date
+					AND status!='Succeded' 
+					AND job_name NOT IN ('')
 
 		UPDATE ConfigThreshold SET last_check_date=GETDATE() WHERE alert_group='Job Failed' 
 
@@ -271,8 +280,10 @@ DECLARE @value int
 		SELECT TOP 1 @MailSubject=QUOTENAME(customer_name)+' - '+QUOTENAME(server_name)+' - '+c.alert_group,
 		@body='
 		<b>Log Date : </b>'+CONVERT(VARCHAR(21),check_date,120)+'
-		<br><b>Name </b>'+alert_name+'
-		<br><I>Detail : </I>'+error_message+'
+		<br><b>Name : </b>'+alert_name+'
+		<br>
+		<br><b>Detail </b>
+		<hr> '+error_message+'
 		',@To=c.[To],@ProfileName=c.profilename,@IsActive=c.is_active,
 		@id=e.ID,
 		@alert_group=e.alert_group
@@ -286,7 +297,6 @@ DECLARE @value int
 					UPDATE ErrorLog SET email_send=1 WHERE ID=@id
 					UPDATE ConfigThreshold SET last_mail_send=GETDATE() WHERE alert_group=@alert_group
 			END
-
 
 
 
