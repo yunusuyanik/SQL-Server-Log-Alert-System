@@ -1,7 +1,7 @@
 USE [msdb]
 GO
 
-/****** Object:  Trigger [dbo].[tr_JobHistory]    Script Date: 8.08.2019 11:44:19 ******/
+/****** Object:  Trigger [dbo].[tr_JobHistory]    Script Date: 8/8/2019 11:09:35 AM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -14,10 +14,11 @@ AFTER INSERT
 AS
 
 INSERT INTO DBA_DB.dbo.Log_JobHistory
-(check_date,job_name,description,job_owner,number_of_steps,is_enabled,frequency,subday_frequency,next_start_date,last_run_duration,last_start_date,last_run_message,status)
+(check_date,job_name,step_name,description,job_owner,number_of_steps,is_enabled,frequency,subday_frequency,next_start_date,last_run_duration,last_start_date,last_run_message,status)
 SELECT 
 	[check_date] = GETDATE(),
-	[job_name] = j.Name, 
+	[job_name] = j.Name,
+	[step_name] = step_name,
     [description] = '"' + NULLIF(j.Description, 'No description available.') + '"',
     [job_owner] = SUSER_SNAME(j.owner_sid),
     [number_of_steps] = (SELECT COUNT(step_id) FROM msdb.dbo.sysjobsteps WHERE job_id = j.job_id),
@@ -70,7 +71,7 @@ INNER JOIN (SELECT job_id, max(run_duration) AS run_duration
 ON j.job_id = maxdur.job_id
 -- INNER JOIN -- Swap Join Types if you don't want to include jobs that have never run
 INNER JOIN
-    (SELECT j1.job_id, j1.run_duration, j1.run_date, j1.run_time, j1.message,j1.run_status
+    (SELECT j1.job_id, j1.run_duration, j1.run_date, j1.run_time, j1.message,j1.run_status,j1.step_name
     FROM inserted j1
     WHERE instance_id = (SELECT MAX(instance_id) FROM inserted j2 WHERE j2.job_id = j1.job_id) AND step_id!=0) lastrun
     ON j.job_id = lastrun.job_id
