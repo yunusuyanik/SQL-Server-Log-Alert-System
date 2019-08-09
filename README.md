@@ -28,10 +28,38 @@ It check these things, for now;
 
 ### usp_DriveStats
  
-<p>This stored procedure</p>
+<p>
+ID,
+check_date,
+server_name,
+instance_name,
+volume_letter,
+volume_label,
+volume_capacity_gb,
+volume_free_space_gb,
+percentage_free_space</p>
 
 ### usp_FileStats
-<p>This stored procedure</p>
+<p>
+ID
+check_date
+database_id
+file_id
+database_name
+file_name
+type_desc
+size_on_disk_mb
+free_size_mb
+io_stall_read_ms
+num_of_reads
+num_of_bytes_read
+io_stall_write_ms
+num_of_writes
+num_of_bytes_written
+growth
+is_percent_growth
+physical_file_name
+</p>
 
 ### usp_Jobs
 <p>This stored procedure</p>
