@@ -16,12 +16,11 @@ AS
 DECLARE @last_check_date datetime 
 DECLARE @value int
 
-
 	/* ----------------------------------
 	 I am gonna check fail jobs. */
 	PRINT 'I am gonna check fail jobs'
 
-		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WHERE alert_group='Job Failed'
+		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WITH(NOLOCK) WHERE alert_group='Job Failed'
 
 			INSERT INTO ErrorLog (check_date,server_name,alert_group,alert_name,error_message)
 				SELECT 
@@ -38,11 +37,11 @@ DECLARE @value int
 					'<br><b>Last Run Duration </b>: '+CAST(last_run_duration AS VARCHAR(100))+
 					'<br><b>Error Message :</b>
 					<br>'+ISNULL(last_run_message,'') error_message
-				FROM Log_JobHistory 
+				FROM Log_JobHistory WITH(NOLOCK)
 				WHERE 
 					check_date>=@last_check_date
 					AND status!='Succeded' 
-					AND job_name NOT IN ('')
+					AND job_name NOT IN ('YONTEMCREDITCUBE Process','YONTEMCUBE Process')
 
 		UPDATE ConfigThreshold SET last_check_date=GETDATE() WHERE alert_group='Job Failed' 
 
@@ -51,7 +50,7 @@ DECLARE @value int
 	 I am gonna check sql error log. */
 	PRINT 'I am gonna check fail jobs'
 
-		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WHERE alert_group='SQL Error Log'
+		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WITH(NOLOCK) WHERE alert_group='SQL Error Log'
 
 			INSERT INTO ErrorLog (check_date,server_name,alert_group,alert_name,error_message)
 
@@ -59,7 +58,8 @@ DECLARE @value int
 				log_date,@@SERVERNAME server_name,
 				'SQL Error Log' alert_group,
 				process_info alert_name,
-				'<br> <b>Error Message :</b> <br>'+error_message error_message from Log_SQLErrors
+				'<br> <b>Error Message :</b> <br>'+error_message error_message 
+			FROM Log_SQLErrors WITH(NOLOCK)
 			WHERE 
 				log_date>=@last_check_date
 
@@ -70,7 +70,7 @@ DECLARE @value int
 	 I am gonna check disk size. */
 	PRINT 'I am gonna check disk size.'
 
-		SELECT @last_check_date=DATEADD(MI,-10,last_check_date),@value=value FROM ConfigThreshold WHERE alert_group='Disk Size'
+		SELECT @last_check_date=DATEADD(MI,-10,last_check_date),@value=value FROM ConfigThreshold WITH(NOLOCK) WHERE alert_group='Disk Size'
 
 			INSERT INTO ErrorLog (check_date,server_name,instance_name,alert_group,alert_name,priority,error_message)
 			SELECT 
@@ -82,7 +82,7 @@ DECLARE @value int
 				<b>Capacity (GB): </b>'+CONVERT(VARCHAR(100),volume_capacity_gb)+'
 				<br><b>Free Space (GB) : </b>'+CONVERT(VARCHAR(100),volume_free_space_gb)+'
 				<br><b>Free Space (Percentage) : </b>'+CONVERT(VARCHAR(100),percentage_free_space) error_message
-			FROM Log_DriveStats 
+			FROM Log_DriveStats WITH(NOLOCK)
 			WHERE 
 				percentage_free_space<@value
 				AND check_date>=@last_check_date
@@ -94,7 +94,7 @@ DECLARE @value int
 	 I am gonna check ldf file size. */
 	PRINT 'I am gonna check ldf file size.'
 
-		SELECT @last_check_date=DATEADD(MI,-10,last_check_date),@value=value FROM ConfigThreshold WHERE alert_group='Log File Size'
+		SELECT @last_check_date=DATEADD(MI,-10,last_check_date),@value=value FROM ConfigThreshold WITH(NOLOCK) WHERE alert_group='Log File Size'
 
 			SELECT TOP 1 WITH TIES 
 				check_date,
@@ -103,7 +103,7 @@ DECLARE @value int
 				SUM(size_on_disk_mb) as data_file_size,
 				LAG(SUM(size_on_disk_mb),1,0) OVER(ORDER BY check_date,database_name,type_desc) log_file_size
 			INTO #temp_size
-			FROM Log_FileStats 
+			FROM Log_FileStats WITH(NOLOCK)
 			WHERE 
 				check_date>=@last_check_date
 			GROUP BY check_date,database_name,type_desc
@@ -118,7 +118,8 @@ DECLARE @value int
 				1 priority,
 				'<br> <b> DatabaseName : </b> '+database_name+
 				'<br> <b> Data File Size (MB) : </b> '+CONVERT(VARCHAR(100),data_file_size)+
-				'<br> <b> Log File Size (MB) </b> : '+CONVERT(VARCHAR(100),log_file_size) error_message FROM #temp_size
+				'<br> <b> Log File Size (MB) </b> : '+CONVERT(VARCHAR(100),log_file_size) error_message 
+			FROM #temp_size
 			WHERE type_desc='ROWS' and log_file_size>=(data_file_size/4)*3 AND log_file_size>50000
 
 		UPDATE ConfigThreshold SET last_check_date=GETDATE() WHERE alert_group='Log File Size'
@@ -128,7 +129,7 @@ DECLARE @value int
 	 I am gonna check cpu usage. */
 	PRINT 'I am gonna check cpu usage.'
 
-		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WHERE alert_group='CPU'
+		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WITH(NOLOCK) WHERE alert_group='CPU'
 
 			INSERT INTO ErrorLog (check_date,server_name,alert_group,alert_name,priority,error_message)
 
@@ -138,7 +139,7 @@ DECLARE @value int
 				'CPU Utilization More Than %'+CONVERT(VARCHAR(10),@value) alert_name,
 				1 priority ,
 				'<br><b>'+counter_name+' :</b> '+CONVERT(VARCHAR(100),cntr_value) error_message
-			FROM Log_PerfmonStats 
+			FROM Log_PerfmonStats WITH(NOLOCK)
 			WHERE 
 				cntr_value>@value
 				AND check_date>=@last_check_date
@@ -151,7 +152,7 @@ DECLARE @value int
 	 I am gonna check database which is_percent_growth=0 */
 	PRINT 'I am gonna check database which is_percent_growth=0'
 
-		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WHERE alert_group='is_percent_growth'
+		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WITH(NOLOCK) WHERE alert_group='is_percent_growth'
 
 			INSERT INTO ErrorLog (check_date,server_name,alert_group,alert_name,priority,error_message)
 			SELECT 
@@ -160,7 +161,7 @@ DECLARE @value int
 				'There is file(s) set with percent growth' alert_name,
 				10 priority ,
 				'<br> <b>DatabaseName : </b>'+ database_name+'<br> <b>FileName : </b>'+file_name error_message
-			FROM Log_FileStats 
+			FROM Log_FileStats WITH(NOLOCK)
 			WHERE 
 				is_percent_growth=1
 				AND check_date>=@last_check_date
@@ -172,7 +173,7 @@ DECLARE @value int
 	PRINT 'I am gonna check tempdb size.'
 
 
-		SELECT @last_check_date=DATEADD(MI,-10,last_check_date),@value=value FROM ConfigThreshold WHERE alert_group='TempDB Size MB'
+		SELECT @last_check_date=DATEADD(MI,-10,last_check_date),@value=value FROM ConfigThreshold WITH(NOLOCK) WHERE alert_group='TempDB Size MB'
 
 			INSERT INTO ErrorLog (check_date,server_name,alert_group,alert_name,priority,error_message)
 			SELECT 
@@ -183,7 +184,7 @@ DECLARE @value int
 				10 priority ,
 				'<br><b>size_on_disk_mb : </b>'+ CONVERT(VARCHAR(50),(SUM(size_on_disk_mb)))+'
 				<br><b>free_size_mb : </b>'+ CONVERT(VARCHAR(50),(SUM(free_size_mb))) error_message
-			FROM Log_FileStats 
+			FROM Log_FileStats WITH(NOLOCK)
 			WHERE
 				check_date>=@last_check_date AND database_name='tempdb'
 			GROUP BY database_name,check_date
@@ -200,7 +201,7 @@ DECLARE @value int
 		IF (SELECT SERVERPROPERTY('IsHadrEnabled'))=1
 
 		BEGIN
-		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WHERE alert_group='AlwaysOn Latency'
+		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WITH(NOLOCK) WHERE alert_group='AlwaysOn Latency'
 
 
 			DECLARE @table VARCHAR(MAX)
@@ -297,7 +298,6 @@ DECLARE @value int
 					UPDATE ErrorLog SET email_send=1 WHERE ID=@id
 					UPDATE ConfigThreshold SET last_mail_send=GETDATE() WHERE alert_group=@alert_group
 			END
-
 
 
 
