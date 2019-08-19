@@ -37,7 +37,6 @@ EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'DBA - Mo
 		@retry_interval=0, 
 		@os_run_priority=0, @subsystem=N'TSQL', 
 		@command=N'EXEC usp_CatchAlert
-
 ', 
 		@database_name=N'DBA_DB', 
 		@flags=0
@@ -189,7 +188,7 @@ EXEC [usp_DriveStats]
 EXEC [usp_TableStats]
 @OutputDatabaseName=''[DBA_DB]'',
 @OutputSchemaName=''[dbo]'',
-@OutputTableName=''[Log_TableStats]''
+@OutputTableName=''[Log_TableStats]'' 
 
 
 EXEC [usp_WaitStats]
@@ -264,6 +263,7 @@ EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'DBA - Mo
 @OutputDatabaseName=''[DBA_DB]'',
 @OutputSchemaName=''[dbo]'',
 @OutputTableName=''[Log_PerfmonStats]''
+
 
 EXEC usp_WhoIsActive_Log', 
 		@database_name=N'DBA_DB', 
