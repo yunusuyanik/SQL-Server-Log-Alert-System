@@ -45,27 +45,6 @@ DECLARE @value int
 
 		UPDATE ConfigThreshold SET last_check_date=GETDATE() WHERE alert_group='Job Failed' 
 
-
-	/* ----------------------------------
-	 I am gonna check sql error log. */
-	PRINT 'I am gonna check fail jobs'
-
-		SELECT @last_check_date=last_check_date,@value=value FROM ConfigThreshold WITH(NOLOCK) WHERE alert_group='SQL Error Log'
-
-			INSERT INTO ErrorLog (check_date,server_name,alert_group,alert_name,error_message)
-
-			SELECT 
-				log_date,@@SERVERNAME server_name,
-				'SQL Error Log' alert_group,
-				process_info alert_name,
-				'<br> <b>Error Message :</b> <br>'+error_message error_message 
-			FROM Log_SQLErrors WITH(NOLOCK)
-			WHERE 
-				log_date>=@last_check_date
-
-		UPDATE ConfigThreshold SET last_check_date=GETDATE() WHERE alert_group='SQL Error Log' 
-
-
 	/* ----------------------------------
 	 I am gonna check disk size. */
 	PRINT 'I am gonna check disk size.'
