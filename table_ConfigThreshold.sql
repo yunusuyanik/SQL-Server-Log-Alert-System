@@ -44,7 +44,7 @@ VALUES
 (2,@customername,'Disk Size',1,'0-100 arasi deger alan free space disk orani.',@mail,'','',@profilename,20,getdate()-1,getdate()-1),
 (3,@customername,'CPU',1,'0-100 arasi deger alan cpu.',@mail,'','',@profilename,80,getdate()-1,getdate()-1),
 (4,@customername,'is_percent_growth',1,'bit deger alan is_percent_growth=0',@mail,'','',@profilename,0,getdate()-1,getdate()-1),
-(5,@customername,'TempDB Size MB',1,'KB deger alan tempdb size.',@mail,'','',@profilename,350000,getdate()-1,getdate()-1),
+(5,@customername,'TempDB Size MB',1,'MB deger alan tempdb size.',@mail,'','',@profilename,350000,getdate()-1,getdate()-1),
 (6,@customername,'AlwaysOn Latency',1,'Dakika deger alan AlwaysOn Latency.',@mail,'','',@profilename,30,getdate()-1,getdate()-1),
 (7,@customername,'Weekly Report',1,'Haftalik performans stats ve wait statistics raporlari.',@mail,'','',@profilename,0,getdate()-1,getdate()-1),
 (8,@customername,'Log File Size',1,'Log File büyüklügü Data File''in %75 veya üzeri ise.',@mail,'','',@profilename,75,getdate()-1,getdate()-1),
