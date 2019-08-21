@@ -27,3 +27,5 @@ CREATE TABLE [dbo].[Log_JobHistory](
 ) ON [PRIMARY]
 GO
 
+CREATE INDEX IX_SA_DBA_check_date_status_job_name 
+ON Log_JobHistory (check_date,status,job_name) WITH (FILLFACTOR=90)
