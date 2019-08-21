@@ -103,7 +103,6 @@ EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'DBA - Mo
 		@os_run_priority=0, @subsystem=N'TSQL', 
 		@command=N'DELETE FROM [DBA_DB].[dbo].[Log_DriveStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
 DELETE FROM [DBA_DB].[dbo].[Log_FileStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
-DELETE FROM [DBA_DB].[dbo].[Log_SQLErrors] WHERE check_date < DATEADD(dd,-30,GETDATE())
 DELETE FROM [DBA_DB].[dbo].[Log_JobHistory] WHERE check_date < DATEADD(dd,-30,GETDATE())
 DELETE FROM [DBA_DB].[dbo].[Log_PerfmonStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
 DELETE FROM [DBA_DB].[dbo].[Log_TableStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
