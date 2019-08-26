@@ -38,4 +38,6 @@ GO
 ALTER TABLE [dbo].[ErrorLog] ADD  CONSTRAINT [DF__ErrorLog__email___3587F3E0]  DEFAULT ((0)) FOR [email_send]
 GO
 
+			 
+CREATE INDEX IX_SA_DBA_email_send_check_date_alert_group ON ErrorLog (email_send,check_date,alert_group) INCLUDE (server_name,alert_name,error_message) 
 
