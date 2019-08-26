@@ -51,3 +51,5 @@ VALUES
 (9,@customername,'SQL Error Log',1,'SQL Error Log üzerindeki severity 16 üzerindeki hatalar.',@mail,'','',@profilename,0,getdate()-1,getdate()-1)
 SET IDENTITY_INSERT ConfigThreshold OFF
 
+CREATE INDEX IX_SA_DBA_alert_group_last_mail_send ON ConfigThreshold (alert_group,last_mail_send) INCLUDE (customer_name,is_active,profilename,[To])
+CREATE UNIQUE CLUSTERED INDEX IX_SA_DBA_ID ON [dbo].[ConfigThreshold] ([ID] )
