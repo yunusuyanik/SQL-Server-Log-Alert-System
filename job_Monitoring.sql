@@ -14,7 +14,7 @@ IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 END
 
 DECLARE @jobId BINARY(16)
-EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'DBA - Monitoring - Alert - Per Minute', 
+EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'_DBA - Monitoring - Alert - Per Minute', 
 		@enabled=1, 
 		@notify_level_eventlog=0, 
 		@notify_level_email=0, 
@@ -79,7 +79,7 @@ IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 END
 
 DECLARE @jobId BINARY(16)
-EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'DBA - Monitoring - Daily - Cleanup', 
+EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'_DBA - Monitoring - Daily - Cleanup', 
 		@enabled=1, 
 		@notify_level_eventlog=0, 
 		@notify_level_email=0, 
@@ -149,7 +149,7 @@ IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 END
 
 DECLARE @jobId BINARY(16)
-EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'DBA - Monitoring - Hourly', 
+EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'_DBA - Monitoring - Hourly', 
 		@enabled=1, 
 		@notify_level_eventlog=0, 
 		@notify_level_email=0, 
@@ -236,7 +236,7 @@ IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 END
 
 DECLARE @jobId BINARY(16)
-EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'DBA - Monitoring - Per Minute', 
+EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'_DBA - Monitoring - Per Minute', 
 		@enabled=1, 
 		@notify_level_eventlog=0, 
 		@notify_level_email=0, 
@@ -306,7 +306,7 @@ IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 END
 
 DECLARE @jobId BINARY(16)
-EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'DBA - Monitoring - Weekly - Report', 
+EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'_DBA - Monitoring - Weekly - Report', 
 		@enabled=1, 
 		@notify_level_eventlog=0, 
 		@notify_level_email=0, 
@@ -356,3 +356,4 @@ QuitWithRollback:
     IF (@@TRANCOUNT > 0) ROLLBACK TRANSACTION
 EndSave:
 GO
+
