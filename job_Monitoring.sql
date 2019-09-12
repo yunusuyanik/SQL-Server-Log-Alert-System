@@ -105,7 +105,6 @@ EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'DBA - Mo
 DELETE FROM [DBA_DB].[dbo].[Log_FileStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
 DELETE FROM [DBA_DB].[dbo].[Log_JobHistory] WHERE check_date < DATEADD(dd,-30,GETDATE())
 DELETE FROM [DBA_DB].[dbo].[Log_PerfmonStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
-DELETE FROM [DBA_DB].[dbo].[Log_TableStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
 DELETE FROM [DBA_DB].[dbo].[Log_WaitStats] WHERE check_date < DATEADD(dd,-30,GETDATE())
 DELETE FROM [DBA_DB].[dbo].[Log_WhoIsActive] WHERE collection_time < DATEADD(dd,-30,GETDATE())', 
 		@database_name=N'DBA_DB', 
@@ -182,13 +181,6 @@ EXEC [usp_DriveStats]
 @OutputDatabaseName=''[DBA_DB]'',
 @OutputSchemaName=''[dbo]'',
 @OutputTableName=''[Log_DriveStats]''
-
-
-EXEC [usp_TableStats]
-@OutputDatabaseName=''[DBA_DB]'',
-@OutputSchemaName=''[dbo]'',
-@OutputTableName=''[Log_TableStats]'' 
-
 
 EXEC [usp_WaitStats]
 @OutputDatabaseName=''[DBA_DB]'',
