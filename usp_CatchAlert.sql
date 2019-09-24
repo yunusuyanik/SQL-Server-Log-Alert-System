@@ -33,8 +33,8 @@ DECLARE @value int
 					'<br><b>Job Owner : </b>'+ISNULL(job_owner,'')+
 					'<br><b>Frequency : </b>'+ISNULL(frequency,'')+
 					'<br><b>Subday Frequency : </b>'+ISNULL(subday_frequency,'')+
-					'<br><b>Next Start Date : </b>'+CAST(next_start_date AS VARCHAR(100))+
-					'<br><b>Last Run Duration </b>: '+CAST(last_run_duration AS VARCHAR(100))+
+					'<br><b>Next Start Date : </b>'+CAST(ISNULL(next_start_date,'') AS VARCHAR(100))+
+					'<br><b>Last Run Duration </b>: '+CAST(ISNULL(last_run_duration,'') AS VARCHAR(100))+
 					'<br><b>Error Message :</b>
 					<br>'+ISNULL(last_run_message,'') error_message
 				FROM Log_JobHistory WITH(NOLOCK)
