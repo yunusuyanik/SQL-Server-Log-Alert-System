@@ -42,7 +42,7 @@ ALTER PROCEDURE [dbo].[usp_PerfmonStats]
 			[cntr_value] [bigint] NULL,
 			[cntr_type] [int] NULL,
 			[value_per_second] [bigint] NULL,
-            PRIMARY KEY CLUSTERED (ID ASC))
+            PRIMARY KEY CLUSTERED (ID ASC))'
 
 	EXEC(@StringToExecute);
 
