@@ -55,6 +55,8 @@ ALTER PROCEDURE [dbo].[usp_FileStats]
 			[is_percent_growth] bit NULL,
 			[physical_file_name] [varchar](5000) NULL,
             PRIMARY KEY CLUSTERED (ID ASC))
+	    
+	EXEC(@StringToExecute);
 
 	IF @CleanupTime IS NOT NULL
 		BEGIN
