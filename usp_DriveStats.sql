@@ -45,6 +45,8 @@ ALTER PROCEDURE [dbo].[usp_DriveStats]
 			[volume_free_space_gb] int NULL,
 			[percentage_free_space] DECIMAL(18,2) NULL,
             PRIMARY KEY CLUSTERED (ID ASC))
+	    
+	EXEC(@StringToExecute);
 	
 	IF @CleanupTime IS NOT NULL
 		BEGIN
