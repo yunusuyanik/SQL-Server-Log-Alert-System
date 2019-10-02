@@ -54,7 +54,7 @@ ALTER PROCEDURE [dbo].[usp_FileStats]
 			[growth] [int] NULL,
 			[is_percent_growth] bit NULL,
 			[physical_file_name] [varchar](5000) NULL,
-            PRIMARY KEY CLUSTERED (ID ASC))
+            PRIMARY KEY CLUSTERED (ID ASC))'
 	    
 	EXEC(@StringToExecute);
 
