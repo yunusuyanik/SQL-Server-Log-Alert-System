@@ -56,10 +56,6 @@ ALTER PROCEDURE [dbo].[usp_FileStats]
 			[physical_file_name] [varchar](5000) NULL,
             PRIMARY KEY CLUSTERED (ID ASC))
 
-			IF NOT EXISTS(SELECT * FROM sys.indexes WHERE object_id = object_id('''+@OutputTableName+''') AND NAME =''IX_SA_DBA_check_date'') 
-		CREATE INDEX IX_SA_DBA_check_date ON '+@OutputTableName+' ([check_date],[database_name]) INCLUDE ([size_on_disk_mb],[free_size_mb]) WITH (FILLFACTOR=90);';
-	EXEC(@StringToExecute);
-
 	IF @CleanupTime IS NOT NULL
 		BEGIN
 			SET @StringToExecute = '
