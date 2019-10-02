@@ -44,7 +44,7 @@ ALTER PROCEDURE [dbo].[usp_DriveStats]
 			[volume_capacity_gb] int NULL,
 			[volume_free_space_gb] int NULL,
 			[percentage_free_space] DECIMAL(18,2) NULL,
-            PRIMARY KEY CLUSTERED (ID ASC))
+            PRIMARY KEY CLUSTERED (ID ASC))'
 	    
 	EXEC(@StringToExecute);
 	
