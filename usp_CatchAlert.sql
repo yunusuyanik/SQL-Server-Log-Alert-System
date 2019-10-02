@@ -63,8 +63,8 @@ DECLARE @value int
 				<br><b>Free Space (Percentage) : </b>'+CONVERT(VARCHAR(100),percentage_free_space) error_message
 			FROM Log_DriveStats WITH(NOLOCK)
 			WHERE 
-				percentage_free_space<@value
-				AND check_date>=@last_check_date
+				check_date>=@last_check_date
+				AND percentage_free_space<@value
 
 		UPDATE ConfigThreshold SET last_check_date=GETDATE() WHERE alert_group='Disk Size'
 
@@ -120,8 +120,8 @@ DECLARE @value int
 				'<br><b>'+counter_name+' :</b> '+CONVERT(VARCHAR(100),cntr_value) error_message
 			FROM Log_PerfmonStats WITH(NOLOCK)
 			WHERE 
-				cntr_value>@value
-				AND check_date>=@last_check_date
+				check_date>=@last_check_date
+				AND cntr_value>@value
 				AND counter_name IN ('SQL CPU','Other CPU')
 
 		UPDATE ConfigThreshold SET last_check_date=GETDATE() WHERE alert_group='CPU' 
@@ -142,8 +142,8 @@ DECLARE @value int
 				'<br> <b>DatabaseName : </b>'+ database_name+'<br> <b>FileName : </b>'+file_name error_message
 			FROM Log_FileStats WITH(NOLOCK)
 			WHERE 
-				is_percent_growth=1
-				AND check_date>=@last_check_date
+				check_date>=@last_check_date
+				AND is_percent_growth=1
 
 		UPDATE ConfigThreshold SET last_check_date=GETDATE() WHERE alert_group='is_percent_growth' 
 
