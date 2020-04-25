@@ -195,11 +195,11 @@ DECLARE @value int
 					[estimated_recovery_time_minutes] = CAST((redo_queue_size/redo_rate/60.0) as decimal(10,2))
 				INTO #temp_alwayson_delay
 				FROM master.sys.dm_hadr_database_replica_states
-				WHERE last_redone_time is not null and redo_rate>-@value
+				WHERE last_redone_time is not null and redo_rate>@value
 				AND last_commit_time<DATEADD(MINUTE,-30,GETDATE())
 
 				SET @table =
-						N'<p><b>Alert</b> : There is a delay in alwayson data transfer that bigger than 60 min.</p>'+
+						N'<p><b>Alert</b> : There is a delay in alwayson data transfer that bigger than @value redo_rate.</p>'+
 						N'<table border=1>' +
 						N'<tr>
 						<th>[database_name]</th>
@@ -234,7 +234,7 @@ DECLARE @value int
 			SELECT TOP 1
 				@last_check_date check_date,@@SERVERNAME server_name,
 				'AlwaysOn Latency' alert_group,
-				'AlwaysOn Latency More Than '+CONVERT(VARCHAR(10),@value)+' min' alert_name,
+				'AlwaysOn Latency More Than '+CONVERT(VARCHAR(10),@value)+' redo_rate' alert_name,
 				1 priority ,
 				@table error_message
 			FROM #temp_alwayson_delay 
