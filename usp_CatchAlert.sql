@@ -195,7 +195,7 @@ DECLARE @value int
 					[estimated_recovery_time_minutes] = CAST((redo_queue_size/redo_rate/60.0) as decimal(10,2))
 				INTO #temp_alwayson_delay
 				FROM master.sys.dm_hadr_database_replica_states
-				WHERE last_redone_time is not null and redo_rate>@value
+				WHERE last_redone_time is not null and redo_rate>@value AND redo_queue_size>@value
 				AND last_commit_time<DATEADD(MINUTE,-30,GETDATE())
 
 				SET @table =
